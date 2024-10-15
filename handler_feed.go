@@ -8,15 +8,9 @@ import (
 	"time"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("please provide both feed name and URL")
-	}
-
-	// Get the current user from the config
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't find user in the db: %w", err)
 	}
 
 	// Generate a new UUID for the feed
@@ -32,7 +26,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		UpdatedAt: now,
 		Name:      cmd.Args[0], // Feed name
 		Url:       cmd.Args[1], // Feed URL
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 	})
 
 	if err != nil {
@@ -45,7 +39,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		CreatedAt: now,
 		UpdatedAt: now,
 		FeedID:    feed.ID,
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 	})
 
 	if err != nil {

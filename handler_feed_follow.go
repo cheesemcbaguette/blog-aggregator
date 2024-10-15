@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func handlerFollowFeed(s *state, cmd command) error {
+func handlerFollowFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) < 1 {
 		return fmt.Errorf("please provide a feed URL")
 	}
@@ -18,13 +18,6 @@ func handlerFollowFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("please provide a valid URL")
 	}
-
-	// Get the current user from the config
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't find user in the db: %w", err)
-	}
-
 	// Generate a new UUID for the feed
 	feedID := uuid.New()
 
@@ -43,7 +36,7 @@ func handlerFollowFeed(s *state, cmd command) error {
 		ID:        feedID,
 		CreatedAt: now,
 		UpdatedAt: now,
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
 
@@ -52,15 +45,15 @@ func handlerFollowFeed(s *state, cmd command) error {
 	}
 
 	// Print out the new feed details
-	fmt.Printf("Feed follow added:\nID: %s\nFeed name: %s\nUser name: %s\n", feed.ID, feed.Name, currentUser.Name)
+	fmt.Printf("Feed follow added:\nID: %s\nFeed name: %s\nUser name: %s\n", feed.ID, feed.Name, user.Name)
 
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
+func handlerFollowing(s *state, cmd command, user database.User) error {
 
 	// Look up feeds by URL
-	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.CurrentUserName)
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.Name)
 
 	if err != nil {
 		return fmt.Errorf("error searching follows for the current user: %w", err)
