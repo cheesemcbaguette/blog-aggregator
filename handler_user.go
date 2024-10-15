@@ -53,7 +53,7 @@ func handlerRegister(s *state, cmd command) error {
 		return fmt.Errorf("couldn't set current user: %w", err)
 	}
 
-	fmt.Sprintf("User switched successfully: %s", user.Name)
+	fmt.Printf("User switched successfully: %s", user.Name)
 	return nil
 }
 

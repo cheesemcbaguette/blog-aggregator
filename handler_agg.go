@@ -52,7 +52,12 @@ func scrapeFeed(db *database.Queries, feed database.Feed) {
 		return
 	}
 	for _, item := range feedData.Channel.Item {
-		fmt.Printf("Found post: %s\n", item.Title)
+		//insert post into the database
+		err = insertPost(db, feed, item)
+		if err != nil {
+			log.Printf("Couldn't insert post (likely due to duplicate URL): %v", err)
+			continue // Skip to the next item if there's an error
+		}
 	}
 	log.Printf("Feed %s collected, %v posts found", feed.Name, len(feedData.Channel.Item))
 }
