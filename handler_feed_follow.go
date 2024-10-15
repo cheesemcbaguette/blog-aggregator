@@ -60,11 +60,40 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	}
 
 	if len(feedFollows) == 0 {
-		return fmt.Errorf("couldn't find any followed feeds for the current user: ")
+		fmt.Printf("couldn't find any followed feeds for the current user: ")
 	}
 
 	for _, follows := range feedFollows {
 		fmt.Printf("Feed name: %s\nFollowed by: %s\n", follows.FeedName, follows.UserName)
+	}
+
+	return nil
+}
+
+func handlerUnFollow(s *state, cmd command, user database.User) error {
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("please provide a feed URL")
+	}
+
+	u, err := url.ParseRequestURI(cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("please provide a valid URL")
+	}
+
+	feed, err := s.db.GetFeedByURL(context.Background(), u.String())
+
+	if err != nil {
+		return fmt.Errorf("couldn't find a feed that matches the entered url: %w", err)
+	}
+
+	// Look up feeds by URL
+	err = s.db.UnFollowForUser(context.Background(), database.UnFollowForUserParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+
+	if err != nil {
+		return fmt.Errorf("error unfollowing feed: %w", err)
 	}
 
 	return nil
